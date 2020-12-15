@@ -2,21 +2,15 @@
 
 set -e
 
-if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-    echo "usage: $0 <path-to-binary.elf>" >&2
-    exit 1
-fi
+rustup override set nightly
 
-if [ "$#" -lt 1 ]; then
-    echo "$0: Expecting a .elf file" >&2
-    exit 1
-fi
-
-cargo build --release
+cargo build -Z build-std=core --target avr-atmega328p.json --release
 
 pushd target/avr-atmega328p/release
 
-avr-objcopy -O ihex rust-arduino-blink.elf rust-arduino-blink.hex
-avrdude -pm328p -carduino -PCOM6 -D "-Uflash:w:rust-arduino-blink.hex"
+avr-objcopy -O ihex blink.elf blink.hex
+avrdude -pm328p -carduino -PCOM6 -D "-Uflash:w:blink.hex"
+# Uncomment when running this from WSL2
+# /mnt/c/Program\ Files\ \(x86\)/Arduino/hardware/tools/avr/bin/avrdude.exe -C "C:\Program Files (x86)\Arduino\hardware\tools\avr\etc\avrdude.conf" -pm328p -carduino -PCOM6 -D "-Uflash:w:blink.hex"
 
 popd
